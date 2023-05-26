@@ -1,4 +1,6 @@
 import './css/styles.css';
+
+const axios = require('axios/dist/node/axios.cjs');
 // import getRefs from './js/get-refs';
 // import API from './js/fetchCountries';
 // import { Notify } from 'notiflix/build/notiflix-notify-aio';

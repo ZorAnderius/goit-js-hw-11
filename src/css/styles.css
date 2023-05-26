@@ -7,8 +7,8 @@ body {
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #bdc3c7;
-  background-image: linear-gradient(to right, #2c3e50, #bdc3c7);
+  background: #f4f4fd;
+  background-image: linear-gradient(to right, #2c3e50, #f4f4fd);
   color: #212121;
   line-height: 1.5;
 }
@@ -117,8 +117,63 @@ input:is(:focus, :hover) {
 }
 
 .container {
-  margin-top: 150px;
+  padding-top: 120px;
   max-width: 1400px;
   margin: auto;
-  padding-top: 40px;
+}
+
+.gallery {
+  display: flex;
+  justify-content: space-between;
+}
+
+.photo-card {
+  width: calc((100% - 3 * 40px) / 4);
+  border-radius: 0px 0px 4px 4px;
+  background-color: #e1e1e1;
+  box-shadow: 0px 0px 16px 12px rgba(99, 96, 96, 0.75);
+  -webkit-box-shadow: 0px 0px 16px 12px rgba(99, 96, 96, 0.75);
+  -moz-box-shadow: 0px 0px 16px 12px rgba(99, 96, 96, 0.75);
+}
+
+.photo-card-img {
+  width: 100%;
+}
+
+.info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  padding: 10px 25px;
+  box-shadow: 0px -22px 40px 12px rgba(99, 96, 96, 0.75) inset;
+  -webkit-box-shadow: 0px -22px 40px 12px rgba(99, 96, 96, 0.75) inset;
+  -moz-box-shadow: 0px -22px 40px 12px rgba(99, 96, 96, 0.75) inset;
+}
+
+.info-item {
+  color: #35373c;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.icon-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #4d4e50;
+  background-color: #c4c4c4;
+  box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
+  -webkit-box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
+  -moz-box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
+}
+
+.icon {
+  fill: #4d4e50;
 }
