@@ -15,7 +15,6 @@ let keyForCountPages = true;
 let keyForLastPage = false;
 const per_page = 40;
 let totalPages = 0;
-let lastElement = null;
 
 const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
   captionsData: 'alt',
@@ -110,8 +109,7 @@ function createHTML(photos) {
   if (hasMorePages()) {
     observer.observe(refs.guard);
   } else if (page > totalPages) {
-    lastElement = document.querySelector('.gallery a:last-child');
-    observer.observe(lastElement);
+    observer.observe(refs.lastElement);
   }
 }
 
