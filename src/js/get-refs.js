@@ -1,7 +1,5 @@
-export default function getRefs() {
-  return {
-    searchInput: document.getElementById('search-box'),
-    listOfCountries: document.querySelector('.country-list'),
-    countryInfo: document.querySelector('.country-info'),
-  };
-}
+export const refs = {
+  formSubmit: document.querySelector('form[action="submit"]'),
+  gallaryEl: document.querySelector('.gallery'),
+  guard: document.querySelector('.js-guard'),
+};

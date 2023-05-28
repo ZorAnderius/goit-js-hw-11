@@ -44,6 +44,7 @@ p {
 
 .form-wrap {
   position: fixed;
+  z-index: 1000;
   top: 0;
   left: 0;
   padding-top: 20px;
@@ -60,7 +61,7 @@ p {
 
 .form-wrapper {
   margin: auto;
-  max-width: 1400px;
+  max-width: 1500px;
   position: relative;
 }
 
@@ -116,19 +117,28 @@ input:is(:focus, :hover) {
   background-color: #676869;
 }
 
-.container {
-  padding-top: 120px;
-  max-width: 1400px;
+.gallery {
   margin: auto;
+  padding: 120px 30px 0px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
 }
 
-.gallery {
-  display: flex;
-  justify-content: space-between;
+.link-photo-card-wrap {
+  scale: 1;
+  transform: scale;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.link-photo-card-wrap:is(:focus, :hover) {
+  scale: 1.07;
 }
 
 .photo-card {
-  width: calc((100% - 3 * 40px) / 4);
+  width: 450px;
   border-radius: 0px 0px 4px 4px;
   background-color: #e1e1e1;
   box-shadow: 0px 0px 16px 12px rgba(99, 96, 96, 0.75);
@@ -137,7 +147,9 @@ input:is(:focus, :hover) {
 }
 
 .photo-card-img {
-  width: 100%;
+  width: 500px;
+  height: 350px;
+  object-fit: cover;
 }
 
 .info {
@@ -160,7 +172,7 @@ input:is(:focus, :hover) {
   gap: 1px;
 }
 
-.icon-wrap {
+/* .icon-wrap {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -172,8 +184,16 @@ input:is(:focus, :hover) {
   box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
   -webkit-box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
   -moz-box-shadow: 0px 0px 5px 3px rgba(99, 96, 96, 0.75) inset;
-}
+} */
 
 .icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  stroke-width: 0;
+  stroke: currentColor;
   fill: #4d4e50;
+}
+.icon-view {
+  width: 1.005859375em;
 }

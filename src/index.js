@@ -1,120 +1,137 @@
 import './css/styles.css';
 
-const axios = require('axios/dist/node/axios.cjs');
-// import getRefs from './js/get-refs';
-// import API from './js/fetchCountries';
-// import { Notify } from 'notiflix/build/notiflix-notify-aio';
-// import { notifyInit } from './js/notifyInit';
-// const debounce = require('lodash.debounce');
+import pixabayAPI from './js/AxiosPixabayAPI';
+import { refs } from './js/get-refs';
+import { createMarkup } from './js/createMarkup';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { notifyInit } from './js/notifyInit';
 
-// const DEBOUNCE_DELAY = 300;
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-// const ref = getRefs();
-// const { searchInput, listOfCountries, countryInfo } = ref;
+let prevValue = '';
+let page = 1;
+let keyForCountPages = true;
+let keyForLastPage = false;
+const per_page = 40;
+let totalPages = 0;
+let lastElement = null;
 
-// searchInput.addEventListener('input', debounce(onInputText, DEBOUNCE_DELAY));
+const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 
-// function onInputText(e) {
-//   e.preventDefault();
-//   let nameOfCountry = e.target.value.trim();
+refs.formSubmit.addEventListener('submit', onLoadPhotos);
 
-//   if (!nameOfCountry) {
-//     resetAllHTML();
-//     return;
-//   }
+async function onLoadPhotos(e) {
+  e.preventDefault();
+  const inputValue = refs.formSubmit.elements[0].value.trim().toLowerCase();
+  if (prevValue === inputValue) {
+    if (!inputValue) {
+      Notify.failure(
+        'Sorry, the search field is empty. Please try again.',
+        notifyInit
+      );
+    }
+    return;
+  } else if (prevValue !== inputValue) {
+    prevValue = inputValue;
+    cleanPage();
+  }
 
-//   API.fetchCountries(nameOfCountry)
-//     .then(checkCountriesList)
-//     .catch(errorNotifycation);
-// }
+  if (!inputValue) {
+    Notify.failure(
+      'Sorry, the search field is empty. Please try again.',
+      notifyInit
+    );
+    cleanPage();
+    return;
+  }
+  servicePhoto(inputValue, page, per_page);
+}
 
-// function checkCountriesList(countries) {
-//   resetAllHTML();
-//   if (countries.length > 2 && countries.length <= 10) {
-//     renderCountriesMarkup(countries);
-//   } else if (countries.length === 1) {
-//     renderCountryMarkup(countries);
-//   } else if (countries.length > 10) {
-//     Notify.info(
-//       'Too many matches found. Please enter a more specific name.',
-//       notifyInit
-//     );
-//   }
-// }
+async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
+  try {
+    const { data } = await pixabayAPI.pixabayPhoto(inputValue, page, per_page);
 
-// function errorNotifycation() {
-//   resetAllHTML();
-//   Notify.failure(
-//     'Opps...there is no a country with that name. Please try again.',
-//     notifyInit
-//   );
-// }
+    if (data.hits.length === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.',
+        notifyInit
+      );
+      cleanPage();
+      return;
+    } else if (keyForCountPages) {
+      totalPages = Math.ceil(data.totalHits / per_page);
+      keyForCountPages = false;
+      Notify.success(`Hooray! We found ${data.total} images.`, notifyInit);
+    }
+    createHTML(data);
+    simpleLightbox.refresh();
+  } catch (error) {
+    Notify.failure(error.message, 'Something went wrong!', notifyInit);
+    cleanPage();
+  }
+}
 
-// function renderCountryMarkup(country) {
-//   const markup = countryMarkup(country);
-//   countryInfo.classList.add('country-info-styles');
-//   countryInfo.innerHTML = markup;
-// }
+const options = {
+  root: null,
+  rootMargin: '300px',
+  treshold: 0,
+};
 
-// function renderCountriesMarkup(countries) {
-//   const markup = countriesListMarup(countries);
-//   listOfCountries.classList.add('country-list-styles');
-//   listOfCountries.innerHTML = markup;
-// }
+let observer = new IntersectionObserver(onPagination, options);
 
-// function countriesListMarup(countries) {
-//   return countries
-//     .map(
-//       country =>
-//         `
-//         <li class="country-item">
-//         <img class="item-svg" src="${country.flags.svg}" alt="${country.name.official}" width="160" height="auto" />
-//         <h2 class="item-title">${country.name.official}</h2>
-//         </li>
-//         `
-//     )
-//     .join('');
-// }
+function onPagination(entries, observer) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && hasMorePages()) {
+      page++;
+      servicePhoto(page);
+      slowScroll();
+    } else if (!hasMorePages()) {
+      observer.unobserve(refs.guard);
+      keyForLastPage = true;
+    }
+    if (entry.isIntersecting && keyForLastPage) {
+      Notify.success(
+        "We're sorry, but you've reached the end of search results.",
+        notifyInit
+      );
+      observer.unobserve(lastElement);
+    }
+  });
+}
 
-// function countryMarkup(country) {
-//   return country.reduce(
-//     (acc, { name, flags, capital, population, languages }) => {
-//       const lang = Object.values(languages).join(', ');
-//       return (acc += `<div class="title-wrap">
-//                         <img src="${flags.svg}" alt="${name.official}" width="320" height="auto" />
-//                     <h2 class="title">${name.official}</h2>
-//                     </div>
-//                     <div class="descr-wrapper">
-//                     <div class="info-wrap">
-//                         <h3 class="sub-title">Capital:</h3>
-//                         <p class="text">${capital}</p>
-//                     </div>
-//                     <div class="info-wrap">
-//                         <h3 class="sub-title">Population:</h3>
-//                         <p class="text">${population}</p>
-//                     </div>
-//                     <div class="info-wrap">
-//                         <h3 class="sub-title">Languages:</h3>
-//                         <p class="text">${lang}</p>
-//                     </div>
-//                     </div>
-//                      `);
-//     },
-//     ''
-//   );
-// }
+function createHTML(photos) {
+  const photosFromPixabey = photos.hits;
+  const markup = createMarkup(photosFromPixabey);
+  refs.gallaryEl.insertAdjacentHTML('beforeend', markup);
+  if (hasMorePages()) {
+    observer.observe(refs.guard);
+  } else if (page > totalPages) {
+    lastElement = document.querySelector('.gallery a:last-child');
+    observer.observe(lastElement);
+  }
+}
 
-// function resetAllHTML() {
-//   resetListOfCountries();
-//   resetCountryInfo();
-// }
+function cleanPage() {
+  refs.gallaryEl.innerHTML = '';
+  keyForCountPages = true;
+  keyForLastPage = false;
+}
 
-// function resetListOfCountries() {
-//   listOfCountries.innerHTML = '';
-//   listOfCountries.classList.remove('country-list-styles');
-// }
+function slowScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
 
-// function resetCountryInfo() {
-//   countryInfo.innerHTML = '';
-//   countryInfo.classList.remove('country-info-styles');
-// }
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
+
+function hasMorePages() {
+  return page <= totalPages;
+}
