@@ -13,8 +13,8 @@ let prevValue = '';
 let page = 1;
 let keyForCountPages = true;
 let keyForLastPage = false;
-const per_page = 40;
 let totalPages = 0;
+const per_page = 40;
 
 const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
   captionsData: 'alt',
