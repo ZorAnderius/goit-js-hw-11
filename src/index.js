@@ -24,7 +24,7 @@ const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
 
 refs.formSubmit.addEventListener('submit', onLoadPhotos);
 
-async function onLoadPhotos(e) {
+function onLoadPhotos(e) {
   e.preventDefault();
   const inputValue = refs.formSubmit.elements[0].value.trim().toLowerCase();
   if (prevValue === inputValue) {
@@ -42,7 +42,7 @@ async function onLoadPhotos(e) {
     cleanPage();
     return;
   }
-  await servicePhoto(inputValue, page, per_page);
+  servicePhoto(inputValue, page, per_page);
 }
 
 async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
