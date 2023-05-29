@@ -13,8 +13,9 @@ let prevValue = '';
 let page = 1;
 let keyForCountPages = true;
 let keyForLastPage = false;
-let totalPages = 0;
 const per_page = 40;
+let totalPages = 0;
+let lastElement = null;
 
 const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
   captionsData: 'alt',
@@ -27,12 +28,6 @@ async function onLoadPhotos(e) {
   e.preventDefault();
   const inputValue = refs.formSubmit.elements[0].value.trim().toLowerCase();
   if (prevValue === inputValue) {
-    if (!inputValue) {
-      Notify.failure(
-        'Sorry, the search field is empty. Please try again.',
-        notifyInit
-      );
-    }
     return;
   } else if (prevValue !== inputValue) {
     prevValue = inputValue;
@@ -47,7 +42,7 @@ async function onLoadPhotos(e) {
     cleanPage();
     return;
   }
-  servicePhoto(inputValue, page, per_page);
+  await servicePhoto(inputValue, page, per_page);
 }
 
 async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
@@ -59,12 +54,14 @@ async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
         'Sorry, there are no images matching your search query. Please try again.',
         notifyInit
       );
+      console.log('Sorry', data.hits.length);
       cleanPage();
       return;
-    } else if (keyForCountPages) {
+    } else if (keyForCountPages && data.hits.length !== 0) {
       totalPages = Math.ceil(data.totalHits / per_page);
       keyForCountPages = false;
       Notify.success(`Hooray! We found ${data.total} images.`, notifyInit);
+      console.log('Hooray!', totalPages);
     }
     createHTML(data);
     simpleLightbox.refresh();
@@ -97,7 +94,6 @@ function onPagination(entries, observer) {
         "We're sorry, but you've reached the end of search results.",
         notifyInit
       );
-      observer.unobserve(lastElement);
     }
   });
 }
@@ -108,8 +104,9 @@ function createHTML(photos) {
   refs.gallaryEl.insertAdjacentHTML('beforeend', markup);
   if (hasMorePages()) {
     observer.observe(refs.guard);
-  } else if (page > totalPages) {
-    observer.observe(refs.lastElement);
+  } else if (page >= totalPages) {
+    lastElement = document.querySelector('.gallery a:last-child');
+    observer.observe(lastElement);
   }
 }
 
@@ -131,5 +128,5 @@ function slowScroll() {
 }
 
 function hasMorePages() {
-  return page <= totalPages;
+  return page < totalPages;
 }
