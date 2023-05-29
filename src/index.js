@@ -16,6 +16,8 @@ let keyForLastPage = false;
 const per_page = 40;
 let totalPages = 0;
 let lastElement = null;
+let inputValue = '';
+let keyForObserver = false;
 
 const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
   captionsData: 'alt',
@@ -24,9 +26,9 @@ const simpleLightbox = new SimpleLightbox('.link-photo-card-wrap', {
 
 refs.formSubmit.addEventListener('submit', onLoadPhotos);
 
-function onLoadPhotos(e) {
+async function onLoadPhotos(e) {
   e.preventDefault();
-  const inputValue = refs.formSubmit.elements[0].value.trim().toLowerCase();
+  inputValue = refs.formSubmit.elements[0].value.trim().toLowerCase();
   if (prevValue === inputValue) {
     return;
   } else if (prevValue !== inputValue) {
@@ -42,10 +44,10 @@ function onLoadPhotos(e) {
     cleanPage();
     return;
   }
-  servicePhoto(inputValue, page, per_page);
+  await servicePhoto(inputValue, page, per_page);
 }
 
-async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
+async function servicePhoto(inputValue, page, per_page) {
   try {
     const { data } = await pixabayAPI.pixabayPhoto(inputValue, page, per_page);
 
@@ -54,14 +56,13 @@ async function servicePhoto(inputValue = prevValue, page, per_page = 40) {
         'Sorry, there are no images matching your search query. Please try again.',
         notifyInit
       );
-      console.log('Sorry', data.hits.length);
       cleanPage();
       return;
     } else if (keyForCountPages && data.hits.length !== 0) {
       totalPages = Math.ceil(data.totalHits / per_page);
       keyForCountPages = false;
-      Notify.success(`Hooray! We found ${data.total} images.`, notifyInit);
-      console.log('Hooray!', totalPages);
+      Notify.success(`Hooray! We found ${data.totalHits} images.`, notifyInit);
+      keyForObserver = true;
     }
     createHTML(data);
     simpleLightbox.refresh();
@@ -77,13 +78,13 @@ const options = {
   treshold: 0,
 };
 
-let observer = new IntersectionObserver(onPagination, options);
+const observer = new IntersectionObserver(onPagination, options);
 
 function onPagination(entries, observer) {
   entries.forEach(entry => {
-    if (entry.isIntersecting && hasMorePages()) {
+    if (entry.isIntersecting && hasMorePages() && keyForObserver) {
       page++;
-      servicePhoto(page);
+      servicePhoto(inputValue, page, per_page);
       slowScroll();
     } else if (!hasMorePages()) {
       observer.unobserve(refs.guard);
@@ -102,18 +103,23 @@ function createHTML(photos) {
   const photosFromPixabey = photos.hits;
   const markup = createMarkup(photosFromPixabey);
   refs.gallaryEl.insertAdjacentHTML('beforeend', markup);
-  if (hasMorePages()) {
-    observer.observe(refs.guard);
-  } else if (page >= totalPages) {
-    lastElement = document.querySelector('.gallery a:last-child');
-    observer.observe(lastElement);
+  if (keyForObserver) {
+    if (hasMorePages()) {
+      observer.observe(refs.guard);
+    } else if (page >= totalPages) {
+      lastElement = document.querySelector('.gallery a:last-child');
+      observer.observe(lastElement);
+    }
   }
 }
 
 function cleanPage() {
   refs.gallaryEl.innerHTML = '';
+  page = 1;
+  observer.unobserve(refs.guard);
   keyForCountPages = true;
   keyForLastPage = false;
+  keyForObserver = false;
 }
 
 function slowScroll() {
